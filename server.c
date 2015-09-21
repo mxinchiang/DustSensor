@@ -13,7 +13,7 @@ int main(int argc,char **argv)
 	connect_to_pi();
 	while(1)
 	{
-		send_text();
+	//	send_text();
 	}
     return 0;
 }
