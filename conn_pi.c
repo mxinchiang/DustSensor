@@ -21,6 +21,7 @@ double humidity = 0.0;
 double dust_one = 0.0;
 double dust_two = 0.0;
 int    dust_three = 0;
+double PRESSURE = 0.0;
 
 int nFd;          /* Uart */
 time_t timep;     /* time local */
@@ -165,6 +166,10 @@ char dustsensor_rec_msg(char buff[6])
 			dust_three = value;
 		break;
 
+		case CMD_READ_PRES:
+			PRESSURE = (double)value/10.0;			
+		break;
+
 		default:
 			printf("RECE. CMD is Error!\n");
 		break;
@@ -177,7 +182,7 @@ void dustsensor_uart()
 	char buff[6];
 	char buff_nu=0;
 	unsigned char number = 0;
-	char cmd[5] = {CMD_READ_TEMP, CMD_READ_HUMI, CMD_READ_DUST1, CMD_READ_DUST2, CMD_READ_DUST3};
+	char cmd[6] = {CMD_READ_TEMP, CMD_READ_HUMI, CMD_READ_DUST1, CMD_READ_DUST2, CMD_READ_DUST3, CMD_READ_PRES};
 	int nRet = 0;
 	char msg[64];
  	bzero(msg,sizeof(msg));
@@ -189,7 +194,7 @@ void dustsensor_uart()
 		sem_wait(&sem_uart);
 		printf("sem is ok\n");
 	
-		for(number=0; number<5; number++)
+		for(number=0; number<sizeof(cmd); number++)
 		{
 			bzero(buff, sizeof(buff));
 			buff_nu = 0;
@@ -209,14 +214,15 @@ void dustsensor_uart()
 		printf("dust_one   ..%0.2lf\n", dust_one);
 		printf("dust_two   ..%0.2lf\n", dust_two);
 		printf("dust_three ..%d\n",     dust_three);
+		printf("Pressure   ..%0.2f\n",  PRESSURE);
 		if( (fp = fopen(txt_name, "a")) == NULL)
 		{
 			printf("can not open file.!\n");
 		}
-		fprintf(fp, "%02d:%02d:%02d\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%d\r\n",
-				    p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three);
+		fprintf(fp, "%02d:%02d:%02d\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%d\t\t%0.2lf\r\n",
+				    p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
 		fclose(fp);
-		sprintf(msg,"%02d:%02d:%02d %.2f %.2f %.2f %.2f %d\n",p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three);
+		sprintf(msg,"%02d:%02d:%02d %.2f %.2f %.2f %.2f %d %0.2f\n",p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
         send_func(msg);
         sleep(1);
     }
@@ -252,7 +258,7 @@ void dustsensor_time()
 	{
 		printf("can not open file.!\n");
 	}	
-	fprintf(fp, "DATE....\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\r\n");
+	fprintf(fp, "DATE....\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\t\tPRESSURE\r\n");
 	fclose(fp);
 
 	while(1)

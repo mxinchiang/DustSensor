@@ -45,6 +45,7 @@ enum CMD_FORM
 	CMD_READ_DUST2= 0x03,
 	CMD_READ_ERROR= 0x04,
 	CMD_READ_DUST3= 0x05,
+	CMD_READ_PRES = 0x06,
 };
 
 extern double temperature;

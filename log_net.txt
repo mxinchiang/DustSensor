@@ -1,0 +1,3 @@
+/home/pi/DustSensor/network-monitor.sh: line 7: ifconfig: command not found
+Network connection down! Attempting reconnection.
+/home/pi/DustSensor/network-monitor.sh: line 11: ifup: command not found
