@@ -9,7 +9,7 @@ if [ $? -ne 0 ]
 then
     echo "start process"
     cd '/home/pi/DustSensor'
-    nohup ./server &
+   	sudo  nohup ./server &
 else
     echo "process is runing....."
 fi

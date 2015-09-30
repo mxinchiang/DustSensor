@@ -9,7 +9,7 @@ CFLAGS= -g
 #CFLAGS= -o 
  
 server:server.o se_socket.o conn_pi.o msg_decoder.o
-	gcc -Wall $(OBJ) $(CFLAGS) -o server  -l pthread
+	gcc -Wall $(OBJ) $(CFLAGS) -o server  -l pthread -lwiringPi
 server.o:server.c se_socket.h conn_pi.h
 	gcc -Wall $(CFLAGS) -c $<
 se_socket.o:se_socket.c se_socket.h msg_decoder.h
