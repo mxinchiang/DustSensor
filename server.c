@@ -9,6 +9,7 @@
 #include "wiringPi.h"
 
 void Water_INT(void);
+void Acc_INT(void);
 int main(int argc,char **argv)
 {
 	startsocket();
@@ -19,7 +20,9 @@ int main(int argc,char **argv)
 		exit(1);
 	}
 	pullUpDnControl(8, PUD_UP);	
+	pullUpDnControl(9, PUD_UP);
 	wiringPiISR(8,INT_EDGE_FALLING, Water_INT);
+	wiringPiISR(9,INT_EDGE_FALLING, Acc_INT);
 	while(1)
 	{
 	//	send_text();
@@ -31,4 +34,10 @@ void Water_INT(void)
 {
 	printf("Water INT\r\n");
 	send_func("Alarm water");
+}
+
+void Acc_INT(void)
+{
+	printf("Acc INT\r\n");
+	send_func("Alarm acc");
 }
