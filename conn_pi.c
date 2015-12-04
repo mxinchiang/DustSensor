@@ -219,8 +219,10 @@ void dustsensor_uart()
 		{
 			printf("can not open file.!\n");
 		}
-		fprintf(fp, "%02d:%02d:%02d\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%d\t\t%0.2lf\r\n",
-				    p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
+		//fprintf(fp, "%02d:%02d:%02d\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%d\t\t%0.2lf\r\n",
+		//		    p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
+		fprintf(fp, "%02d:%02d:%02d,%0.2lf,%0.2lf,%0.2lf,%0.2lf,%d,%0.2lf\r",
+					p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
 		fclose(fp);
 		sprintf(msg,"%02d:%02d:%02d %.2f %.2f %.2f %.2f %d %0.2f\n",p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
         send_func(msg);
@@ -252,13 +254,15 @@ void dustsensor_time()
 	
 	printf("%d %d %d\n", REF_TIME.mday_ref, REF_TIME.mon_ref, REF_TIME.year_ref);
     /* Pay attention the default path */
-	sprintf(txt_name, "../TestFile/%d-%d-%d.txt", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
+	//sprintf(txt_name, "../TestFile/%d-%d-%d.txt", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
+	sprintf(txt_name, "../TestFile/%d-%d-%d.csv", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
 
 	if( (fp = fopen(txt_name, "w+")) == NULL)
 	{
 		printf("can not open file.!\n");
 	}	
-	fprintf(fp, "DATE....\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\t\tPRESSURE\r\n");
+	//fprintf(fp, "DATE....\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\t\tPRESSURE\r\n");
+	fprintf(fp, "DATE,TEMP,HUMI,DUST1,DUST2,DUST3,PRESSURE\r");
 	fclose(fp);
 
 	while(1)
