@@ -22,6 +22,9 @@ double dust_one = 0.0;
 double dust_two = 0.0;
 int    dust_three = 0;
 double PRESSURE = 0.0;
+double acc_x=0.0;
+double acc_y=0.0;
+double acc_z=0.0;
 
 int nFd;          /* Uart */
 time_t timep;     /* time local */
@@ -167,7 +170,19 @@ char dustsensor_rec_msg(char buff[6])
 		break;
 
 		case CMD_READ_PRES:
-			PRESSURE = (double)value/10.0;			
+			PRESSURE = (double)(value-500)/10.0;			
+		break;
+		
+		case CMD_READ_ACC_X:
+			acc_x=(double)value;
+		break;
+
+		case CMD_READ_ACC_Y:
+			acc_y=(double)value;
+		break;
+
+		case CMD_READ_ACC_Z:
+			acc_z=(double)value;
 		break;
 
 		default:
@@ -182,7 +197,7 @@ void dustsensor_uart()
 	char buff[6];
 	char buff_nu=0;
 	unsigned char number = 0;
-	char cmd[6] = {CMD_READ_TEMP, CMD_READ_HUMI, CMD_READ_DUST1, CMD_READ_DUST2, CMD_READ_DUST3, CMD_READ_PRES};
+	char cmd[9] = {CMD_READ_TEMP, CMD_READ_HUMI, CMD_READ_DUST1, CMD_READ_DUST2, CMD_READ_DUST3, CMD_READ_PRES,CMD_READ_ACC_X,CMD_READ_ACC_Y,CMD_READ_ACC_Z};
 	int nRet = 0;
 	char msg[64];
  	bzero(msg,sizeof(msg));
@@ -215,6 +230,9 @@ void dustsensor_uart()
 		printf("dust_two   ..%0.2lf\n", dust_two);
 		printf("dust_three ..%d\n",     dust_three);
 		printf("Pressure   ..%0.2f\n",  PRESSURE);
+		printf("acc_x      ..%0.2lf\n", acc_x);
+		printf("acc_y      ..%0.2lf\n", acc_y);
+		printf("acc_z      ..%0.2lf\n", acc_z);
 		if( (fp = fopen(txt_name, "a")) == NULL)
 		{
 			printf("can not open file.!\n");
