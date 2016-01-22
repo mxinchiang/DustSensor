@@ -18,29 +18,39 @@ struct termios stNew;
 struct termios stOld;
 double temperature = 0.0;
 double humidity = 0.0;
-double dust_one = 0.0;
+double dust = 0.0;
 double dust_two = 0.0;
-int    dust_three = 0;
+int dust_three = 0.0;
 double PRESSURE = 0.0;
 double acc_x=0.0;
 double acc_y=0.0;
 double acc_z=0.0;
+double gps_n_high = 0.0;
+double gps_n_low = 0.0;
+double gps_e_high = 0.0;
+double gps_e_low = 0.0;
 
 int nFd;          /* Uart */
 time_t timep;     /* time local */
 struct tm *p;     /* time */
-FILE *fp = NULL;  /* test file */
 FILE *file_T=NULL;
 FILE *file_H=NULL;
 FILE *file_D=NULL;
 FILE *file_P=NULL;
 FILE *file_ACC=NULL;
+FILE *file_GPS = NULL;
 FILE *file_ALARM=NULL;
 
 char txt_name[20];
 sem_t sem_uart;
 
 int interval = 1;
+int temp_interval = 1;
+int humi_interval = 1;
+int dust_interval = 1;
+int press_interval = 1;
+int acc_interval = 1;
+int gps_interval = 1;
 
 /* Open Port & Set Port */
 int SerialInit()
@@ -162,7 +172,7 @@ char dustsensor_rec_msg(char buff[6])
 		#if 0
 			printf("CMD_DUST1 .. %d\n", value);
 		#endif
-			dust_one = (double)value/100.0;
+			dust = (double)value/100.0;
 		break;
 
 		case CMD_READ_DUST2:
@@ -191,6 +201,22 @@ char dustsensor_rec_msg(char buff[6])
 		case CMD_READ_ACC_Z:
 			acc_z=(double)value;
 		break;
+	
+		case CMD_READ_GPS_N_HIGH:
+			gps_n_high = (double)value;
+		break;
+
+		case CMD_READ_GPS_N_LOW :
+			gps_n_low = (double)value;
+		break;
+
+		case CMD_READ_GPS_E_HIGH :
+			gps_e_high = (double)value;
+		break;
+
+		case CMD_READ_GPS_E_LOW :
+			gps_e_low = (double)value;
+		break;
 
 		default:
 			printf("RECE. CMD is Error!\n");
@@ -201,10 +227,19 @@ char dustsensor_rec_msg(char buff[6])
 
 void dustsensor_uart()
 {
+	int temp_cnt = 0;
+	int humi_cnt = 0;
+	int dust_cnt = 0;
+	int press_cnt = 0;
+	int acc_cnt = 0;
+	int gps_cnt = 0;
+	double gps_e = 0.0;
+	double gps_n = 0.0;
+
 	char buff[6];
 	char buff_nu=0;
 	unsigned char number = 0;
-	char cmd[9] = {CMD_READ_TEMP, CMD_READ_HUMI, CMD_READ_DUST1, CMD_READ_DUST2, CMD_READ_DUST3, CMD_READ_PRES,CMD_READ_ACC_X,CMD_READ_ACC_Y,CMD_READ_ACC_Z};
+	char cmd[13] = {CMD_READ_TEMP, CMD_READ_HUMI, CMD_READ_DUST1, CMD_READ_DUST2, CMD_READ_DUST3, CMD_READ_PRES,CMD_READ_ACC_X,CMD_READ_ACC_Y,CMD_READ_ACC_Z,CMD_READ_GPS_N_HIGH,CMD_READ_GPS_N_LOW,CMD_READ_GPS_E_HIGH,CMD_READ_GPS_E_LOW};
 	int nRet = 0;
 	char msg[64];
  	bzero(msg,sizeof(msg));
@@ -233,23 +268,96 @@ void dustsensor_uart()
 
 		printf("temperature..%0.2lf\n", temperature);		
 		printf("humidity   ..%0.2lf\n", humidity);
-		printf("dust_one   ..%0.2lf\n", dust_one);
+		printf("dust       ..%0.2lf\n", dust);
 		printf("dust_two   ..%0.2lf\n", dust_two);
 		printf("dust_three ..%d\n",     dust_three);
 		printf("Pressure   ..%0.2f\n",  PRESSURE);
 		printf("acc_x      ..%0.2lf\n", acc_x);
 		printf("acc_y      ..%0.2lf\n", acc_y);
 		printf("acc_z      ..%0.2lf\n", acc_z);
-		if( (fp = fopen(txt_name, "a")) == NULL)
+		printf("gps_e_high ..%0.2lf\n", gps_e_high);
+		printf("gps_e_low  ..%0.2lf\n", gps_e_low);
+		printf("gps_n_high ..%0.2lf\n", gps_n_high);
+		printf("gps_n_low  ..%0.2lf\n", gps_n_low);
+
+		gps_e = gps_e_high + gps_e_low / 10000;
+		gps_n = gps_n_high + gps_n_low / 10000;
+
+		temp_cnt++;
+		humi_cnt++;
+		dust_cnt++;
+		press_cnt++;
+		acc_cnt++;
+		gps_cnt++;
+
+		if (temp_cnt == temp_interval) 
 		{
-			printf("can not open file.!\n");
+			if ((file_T = fopen("Temp.csv", "a")) == NULL)
+			{
+				printf("can not open file Temp.csv!\n");
+			}
+			fprintf(file_T, "%02d:%02d:%02d,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, temperature);
+			fclose(file_T);
+			temp_cnt = 0;
 		}
-		//fprintf(fp, "%02d:%02d:%02d\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%0.2lf\t\t%d\t\t%0.2lf\r\n",
-		//		    p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
-		fprintf(fp, "%02d:%02d:%02d,%0.2lf,%0.2lf,%0.2lf,%0.2lf,%d,%0.2lf\r",
-					p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
-		fclose(fp);
-		sprintf(msg,"%02d:%02d:%02d %.2f %.2f %.2f %.2f %d %0.2f\n",p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_one, dust_two, dust_three, PRESSURE);
+
+		if (humi_cnt == humi_interval)
+		{
+			if ((file_H = fopen("Humi.csv", "a")) == NULL)
+			{
+				printf("can not open file Humi.csv!\n");
+			}
+			fprintf(file_H, "%02d:%02d:%02d,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, humidity);
+			fclose(file_H);
+			humi_cnt = 0;
+		}
+
+		if (dust_cnt == dust_interval)
+		{
+			if ((file_D = fopen("Dust.csv", "a")) == NULL)
+			{
+				printf("can not open file Dust.csv!\n");
+			}
+			fprintf(file_D, "%02d:%02d:%02d,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, dust);
+			fclose(file_D);
+			dust_cnt = 0;
+		}
+
+		if (press_cnt == press_interval)
+		{
+			if ((file_P = fopen("Press.csv", "a")) == NULL)
+			{
+				printf("can not open file Press.csv!\n");
+			}
+			fprintf(file_P, "%02d:%02d:%02d,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, PRESSURE);
+			fclose(file_P);
+			press_cnt = 0;
+		}
+
+		if (acc_cnt == acc_interval)
+		{
+			if ((file_ACC = fopen("Acc.csv", "a")) == NULL)
+			{
+				printf("can not open file Acc.csv!\n");
+			}
+			fprintf(file_ACC, "%02d:%02d:%02d,%0.2lf,%0.2lf,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, acc_x, acc_y, acc_z);
+			fclose(file_ACC);
+			acc_cnt = 0;
+		}
+
+		if (gps_cnt == gps_interval)
+		{
+			if ((file_GPS = fopen("GPS.csv", "a")) == NULL)
+			{
+				printf("can not open file GPS.csv!\n");
+			}
+			fprintf(file_GPS, "%02d:%02d:%02d,%0.2lf,%.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, gps_e, gps_n);
+			fclose(file_GPS);
+			gps_cnt = 0;
+		}
+
+		sprintf(msg, "%02d:%02d:%02d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
+					p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust, PRESSURE, acc_x, acc_y, acc_z, gps_e, gps_n);
         send_func(msg);
         sleep(1);
     }
@@ -314,7 +422,7 @@ void dustsensor_time()
 	sprintf(txt_name, "Press.csv");//Press
 	if ((file_P = fopen(txt_name, "w+")) == NULL)
 	{
-		printf("can not open file_T.!\n");
+		printf("can not open file_P.!\n");
 	}
 	fprintf(file_P, "DATE,PRESSURE\r");
 	fclose(file_P);
@@ -322,15 +430,23 @@ void dustsensor_time()
 	sprintf(txt_name, "Acc.csv");//Acc
 	if ((file_ACC = fopen(txt_name, "w+")) == NULL)
 	{
-		printf("can not open file_T.!\n");
+		printf("can not open file_ACC.!\n");
 	}
 	fprintf(file_ACC, "DATE,ACC_X,ACC_Y,ACC_Z\r");
 	fclose(file_ACC);
 
+	sprintf(txt_name, "GPS.csv");//GPS
+	if ((file_GPS = fopen(txt_name, "w+")) == NULL)
+	{
+		printf("can not open file_GPS.!\n");
+	}
+	fprintf(file_GPS, "DATE,GPS_E,GPS_N\r");
+	fclose(file_GPS);
+
 	sprintf(txt_name, "Alarm.csv");//Alarm
 	if ((file_ALARM = fopen(txt_name, "w+")) == NULL)
 	{
-		printf("can not open file_T.!\n");
+		printf("can not open file_ALARM.!\n");
 	}
 	fprintf(file_ALARM, "DATE,ALAEM\r");
 	fclose(file_ALARM);
@@ -384,7 +500,7 @@ void dustsensor_time()
 			sprintf(txt_name, "Press.csv");//Press
 			if ((file_P = fopen(txt_name, "w+")) == NULL)
 			{
-				printf("can not open file_T.!\n");
+				printf("can not open file_P.!\n");
 			}
 			fprintf(file_P, "DATE,PRESSURE\r");
 			fclose(file_P);
@@ -392,15 +508,23 @@ void dustsensor_time()
 			sprintf(txt_name, "Acc.csv");//Acc
 			if ((file_ACC = fopen(txt_name, "w+")) == NULL)
 			{
-				printf("can not open file_T.!\n");
+				printf("can not open file_ACC.!\n");
 			}
 			fprintf(file_ACC, "DATE,ACC_X,ACC_Y,ACC_Z\r");
 			fclose(file_ACC);
 
+			sprintf(txt_name, "GPS.csv");//GPS
+			if ((file_GPS = fopen(txt_name, "w+")) == NULL)
+			{
+				printf("can not open file_GPS.!\n");
+			}
+			fprintf(file_GPS, "DATE,GPS_E,GPS_N\r");
+			fclose(file_GPS);
+
 			sprintf(txt_name, "Alarm.csv");//Alarm
 			if ((file_ALARM = fopen(txt_name, "w+")) == NULL)
 			{
-				printf("can not open file_T.!\n");
+				printf("can not open file_ALARM.!\n");
 			}
 			fprintf(file_ALARM, "DATE,ALAEM\r");
 			fclose(file_ALARM);
