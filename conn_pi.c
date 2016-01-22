@@ -30,6 +30,13 @@ int nFd;          /* Uart */
 time_t timep;     /* time local */
 struct tm *p;     /* time */
 FILE *fp = NULL;  /* test file */
+FILE *file_T=NULL;
+FILE *file_H=NULL;
+FILE *file_D=NULL;
+FILE *file_P=NULL;
+FILE *file_ACC=NULL;
+FILE *file_ALARM=NULL;
+
 char txt_name[20];
 sem_t sem_uart;
 
@@ -273,15 +280,60 @@ void dustsensor_time()
 	printf("%d %d %d\n", REF_TIME.mday_ref, REF_TIME.mon_ref, REF_TIME.year_ref);
     /* Pay attention the default path */
 	//sprintf(txt_name, "../TestFile/%d-%d-%d.txt", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
-	sprintf(txt_name, "../TestFile/%d-%d-%d.csv", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
-
-	if( (fp = fopen(txt_name, "w+")) == NULL)
+	chdir("../");
+	mkdir("LogFiles/",777);
+	chdir("LogFiles/");
+	sprintf(txt_name, "%d-%d-%d", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
+	mkdir(txt_name,777);
+	chdir(txt_name);
+	sprintf(txt_name, "Temp.csv");//Temp
+	if( (file_T = fopen(txt_name, "w+")) == NULL)
 	{
-		printf("can not open file.!\n");
+		printf("can not open file_T.!\n");
 	}	
 	//fprintf(fp, "DATE....\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\t\tPRESSURE\r\n");
-	fprintf(fp, "DATE,TEMP,HUMI,DUST1,DUST2,DUST3,PRESSURE\r");
-	fclose(fp);
+	fprintf(file_T, "DATE,TEMP\r");
+	fclose(file_T);
+
+	sprintf(txt_name, "Humi.csv");//Humi
+	if ((file_H = fopen(txt_name, "w+")) == NULL)
+	{
+		printf("can not open file_H.!\n");
+	}
+	fprintf(file_H, "DATE,HUMI\r");
+	fclose(file_H);
+
+	sprintf(txt_name, "Dust.csv");//Dust
+	if ((file_D = fopen(txt_name, "w+")) == NULL)
+	{
+		printf("can not open file_D.!\n");
+	}
+	fprintf(file_D, "DATE,DUST\r");
+	fclose(file_D);
+
+	sprintf(txt_name, "Press.csv");//Press
+	if ((file_P = fopen(txt_name, "w+")) == NULL)
+	{
+		printf("can not open file_T.!\n");
+	}
+	fprintf(file_P, "DATE,PRESSURE\r");
+	fclose(file_P);
+
+	sprintf(txt_name, "Acc.csv");//Acc
+	if ((file_ACC = fopen(txt_name, "w+")) == NULL)
+	{
+		printf("can not open file_T.!\n");
+	}
+	fprintf(file_ACC, "DATE,ACC_X,ACC_Y,ACC_Z\r");
+	fclose(file_ACC);
+
+	sprintf(txt_name, "Alarm.csv");//Alarm
+	if ((file_ALARM = fopen(txt_name, "w+")) == NULL)
+	{
+		printf("can not open file_T.!\n");
+	}
+	fprintf(file_ALARM, "DATE,ALAEM\r");
+	fclose(file_ALARM);
 
 	while(1)
     {
@@ -297,13 +349,61 @@ void dustsensor_time()
 			REF_TIME.mon_ref  = 1+p->tm_mon;
 			REF_TIME.year_ref = 1900+p->tm_year;
 
-			sprintf(txt_name, "../TestFile/%d-%d-%d.txt", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
-			if( (fp = fopen(txt_name, "w+")) == NULL)
+			sprintf(txt_name, "../LogFiles/%d-%d-%d", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
+			chdir("../");
+			mkdir("LogFiles/", 777);
+			chdir("LogFiles/");
+			sprintf(txt_name, "%d-%d-%d", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
+			mkdir(txt_name,777);
+			chdir(txt_name);
+			sprintf(txt_name, "Temp.csv");//Temp
+			if ((file_T = fopen(txt_name, "w+")) == NULL)
 			{
-				printf("can not open file.!\n");
+				printf("can not open file_T.!\n");
 			}
-			fprintf(fp, "DATE\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\n");
-			fclose(fp);
+			//fprintf(fp, "DATE....\t\t\tTEMP\t\tHUMI\t\tDUST1\t\tDUST2\t\tDUST3\t\tPRESSURE\r\n");
+			fprintf(file_T, "DATE,TEMP\r");
+			fclose(file_T);
+
+			sprintf(txt_name, "Humi.csv");//Humi
+			if ((file_H = fopen(txt_name, "w+")) == NULL)
+			{
+				printf("can not open file_H.!\n");
+			}
+			fprintf(file_H, "DATE,HUMI\r");
+			fclose(file_H);
+
+			sprintf(txt_name, "Dust.csv");//Dust
+			if ((file_D = fopen(txt_name, "w+")) == NULL)
+			{
+				printf("can not open file_D.!\n");
+			}
+			fprintf(file_D, "DATE,DUST\r");
+			fclose(file_D);
+
+			sprintf(txt_name, "Press.csv");//Press
+			if ((file_P = fopen(txt_name, "w+")) == NULL)
+			{
+				printf("can not open file_T.!\n");
+			}
+			fprintf(file_P, "DATE,PRESSURE\r");
+			fclose(file_P);
+
+			sprintf(txt_name, "Acc.csv");//Acc
+			if ((file_ACC = fopen(txt_name, "w+")) == NULL)
+			{
+				printf("can not open file_T.!\n");
+			}
+			fprintf(file_ACC, "DATE,ACC_X,ACC_Y,ACC_Z\r");
+			fclose(file_ACC);
+
+			sprintf(txt_name, "Alarm.csv");//Alarm
+			if ((file_ALARM = fopen(txt_name, "w+")) == NULL)
+			{
+				printf("can not open file_T.!\n");
+			}
+			fprintf(file_ALARM, "DATE,ALAEM\r");
+			fclose(file_ALARM);
 		}
 
 		/* sample data every 20 sec */
