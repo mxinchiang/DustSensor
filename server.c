@@ -7,6 +7,7 @@
 #include "se_socket.h"
 #include "conn_pi.h"
 #include "wiringPi.h"
+struct tm *p;     /* time */
 
 void Water_INT(void);
 void Acc_INT(void);
@@ -33,11 +34,23 @@ int main(int argc,char **argv)
 void Water_INT(void)
 {
 	printf("Water INT\r\n");
+	if ((file_ALARM = fopen("Alarm.csv", "a")) == NULL)
+	{
+		printf("can not open file Alarm.csv!\n");
+	}
+	fprintf(file_ALARM, "%02d:%02d:%02d,Flooding\r", p->tm_hour, p->tm_min, p->tm_sec);
+	fclose(file_ALARM);
 	send_func("Alarm water");
 }
 
 void Acc_INT(void)
 {
 	printf("Acc INT\r\n");
+	if ((file_ALARM = fopen("Alarm.csv", "a")) == NULL)
+	{
+		printf("can not open file Alarm.csv!\n");
+	}
+	fprintf(file_ALARM, "%02d:%02d:%02d,Vibration\r", p->tm_hour, p->tm_min, p->tm_sec);
+	fclose(file_ALARM);
 	send_func("Alarm acc");
 }

@@ -60,6 +60,14 @@ extern double humidity;
 extern double dust_one;
 extern double dust_two;
 extern int interval;
+extern int temp_interval;
+extern int humi_interval;
+extern int dust_interval;
+extern int press_interval;
+extern int acc_interval;
+extern int gps_interval;
+
+extern FILE *file_ALARM;
 
 int SerialInit();
 void dustsensor_send_msg(int nFd, char addr, char cmd);
