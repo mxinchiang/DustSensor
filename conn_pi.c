@@ -292,7 +292,7 @@ void dustsensor_uart()
 
 		if (temp_cnt == temp_interval) 
 		{
-			if ((file_T = fopen("Temp.csv", "a")) == NULL)
+			if ((file_T = fopen("Temp.csv", "a+")) == NULL)
 			{
 				printf("can not open file Temp.csv!\n");
 			}
@@ -303,7 +303,7 @@ void dustsensor_uart()
 
 		if (humi_cnt == humi_interval)
 		{
-			if ((file_H = fopen("Humi.csv", "a")) == NULL)
+			if ((file_H = fopen("Humi.csv", "a+")) == NULL)
 			{
 				printf("can not open file Humi.csv!\n");
 			}
@@ -314,18 +314,18 @@ void dustsensor_uart()
 
 		if (dust_cnt == dust_interval)
 		{
-			if ((file_D = fopen("Dust.csv", "a")) == NULL)
+			if ((file_D = fopen("Dust.csv", "a+")) == NULL)
 			{
 				printf("can not open file Dust.csv!\n");
 			}
-			fprintf(file_D, "%02d:%02d:%02d,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, dust);
+			fprintf(file_D, "%02d:%02d:%02d,%0.2lf\r", p->tm_hour, p->tm_min, p->tm_sec, dust_two);
 			fclose(file_D);
 			dust_cnt = 0;
 		}
 
 		if (press_cnt == press_interval)
 		{
-			if ((file_P = fopen("Press.csv", "a")) == NULL)
+			if ((file_P = fopen("Press.csv", "a+")) == NULL)
 			{
 				printf("can not open file Press.csv!\n");
 			}
@@ -336,7 +336,7 @@ void dustsensor_uart()
 
 		if (acc_cnt == acc_interval)
 		{
-			if ((file_ACC = fopen("Acc.csv", "a")) == NULL)
+			if ((file_ACC = fopen("Acc.csv", "a+")) == NULL)
 			{
 				printf("can not open file Acc.csv!\n");
 			}
@@ -347,7 +347,7 @@ void dustsensor_uart()
 
 		if (gps_cnt == gps_interval)
 		{
-			if ((file_GPS = fopen("GPS.csv", "a")) == NULL)
+			if ((file_GPS = fopen("GPS.csv", "a+")) == NULL)
 			{
 				printf("can not open file GPS.csv!\n");
 			}
@@ -357,7 +357,7 @@ void dustsensor_uart()
 		}
 
 		sprintf(msg, "%02d:%02d:%02d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
-					p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust, PRESSURE, acc_x, acc_y, acc_z, gps_e, gps_n);
+					p->tm_hour, p->tm_min, p->tm_sec, temperature, humidity, dust_two, PRESSURE, acc_x, acc_y, acc_z, gps_e, gps_n);
         send_func(msg);
         sleep(1);
     }
@@ -389,10 +389,16 @@ void dustsensor_time()
     /* Pay attention the default path */
 	//sprintf(txt_name, "../TestFile/%d-%d-%d.txt", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
 	chdir("../");
-	mkdir("LogFiles/",777);
+	if(access("LogFiles/",0)<0)
+	{
+		mkdir("LogFiles/",777);
+	}
 	chdir("LogFiles/");
 	sprintf(txt_name, "%d-%d-%d", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
-	mkdir(txt_name,777);
+	if (access(txt_name, 0) < 0)
+	{
+		mkdir(txt_name, 777);
+	}
 	chdir(txt_name);
 	sprintf(txt_name, "Temp.csv");//Temp
 	if( (file_T = fopen(txt_name, "w+")) == NULL)
@@ -467,10 +473,16 @@ void dustsensor_time()
 
 			sprintf(txt_name, "../LogFiles/%d-%d-%d", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
 			chdir("../");
-			mkdir("LogFiles/", 777);
-			chdir("LogFiles/");
+			//if (access("LogFiles/", 0)<0)
+			//{
+			//	mkdir("LogFiles/", 777);
+			//}
+			//chdir("LogFiles/");
 			sprintf(txt_name, "%d-%d-%d", REF_TIME.year_ref, REF_TIME.mon_ref, REF_TIME.mday_ref);
-			mkdir(txt_name,777);
+			if (access(txt_name, 0) < 0)
+			{
+				mkdir(txt_name, 777);
+			}
 			chdir(txt_name);
 			sprintf(txt_name, "Temp.csv");//Temp
 			if ((file_T = fopen(txt_name, "w+")) == NULL)
